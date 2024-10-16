@@ -1,0 +1,359 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+
+// Define constants
+#define ESPRESSO_BEANS 8   // coffee beans in grams for one espresso 
+#define ESPRESSO_WATER 30  // water required for 1 espresso 
+
+#define CAPPUCCINO_BEANS 8  // coffee beans in grams for one cappuccino
+#define CAPPUCCINO_WATER 30 // water required for 1 cappuccino
+#define CAPPUCCINO_MILK 70  // milk required for 1 cappuccino
+
+#define MOCHA_BEANS 8         // coffee beans in grams for one mocha
+#define MOCHA_WATER 39        // water required for 1 mocha
+#define MOCHA_MILK 160        // milk required for 1 mocha
+#define MOCHA_CHOCOLATE 30    // chocolate syrup required for 1 mocha
+
+#define MIN_COFFEEBEANS 16      // threshold for coffee beans
+#define MIN_WATER 80            // threshold for water
+#define MIN_MILK 400            // threshold for milk
+#define MIN_CHOCOLATESYRUP 60   // threshold for chocolate syrup
+#define ADMIN_PASSWORD 1453     // admin password
+
+// Define global variables
+float total_amount = 0.0;
+
+float espresso_price = 3.5;
+float cappuccino_price = 4.5;
+float mocha_price = 5.5;
+
+int coffeebeans = 2000;
+int water = 2000;
+int milk = 2000;
+int chocolatesyrup = 4000;
+
+int espresso_sold = 0;
+int cappuccino_sold = 0;
+int mocha_sold = 0;
+
+// Function to check espresso availability
+bool availableespresso()
+{
+    return (coffeebeans >= ESPRESSO_BEANS && water >= ESPRESSO_WATER);
+}
+
+// Function to check cappuccino availability
+bool availablecappuccino()
+{
+    return (coffeebeans >= CAPPUCCINO_BEANS && water >= CAPPUCCINO_WATER && milk >= CAPPUCCINO_MILK);
+}
+
+// Function to check mocha availability
+bool availablemocha()
+{
+    return (coffeebeans >= MOCHA_BEANS && water >= MOCHA_WATER && milk >= MOCHA_MILK && chocolatesyrup >= MOCHA_CHOCOLATE);
+}
+
+// Function to reduce used ingredients
+void usedingredients(int coffee)
+{
+    switch (coffee)
+    {
+    case 1: // Espresso
+        coffeebeans -= ESPRESSO_BEANS;
+        water -= ESPRESSO_WATER;
+        espresso_sold++;
+        break;
+    case 2: // Cappuccino
+        coffeebeans -= CAPPUCCINO_BEANS;
+        water -= CAPPUCCINO_WATER;
+        milk -= CAPPUCCINO_MILK;
+        cappuccino_sold++;
+        break;
+    case 3: // Mocha
+        coffeebeans -= MOCHA_BEANS;
+        water -= MOCHA_WATER;
+        milk -= MOCHA_MILK;
+        chocolatesyrup -= MOCHA_CHOCOLATE;
+        mocha_sold++;
+        break;
+    }
+}
+
+// Function to check for low ingredients
+void checkforlowingredients()
+{
+    if (coffeebeans < MIN_COFFEEBEANS)
+        printf("Low coffee beans: %d\n", coffeebeans);
+    if (water < MIN_WATER)
+        printf("Low water: %d\n", water);
+    if (milk < MIN_MILK)
+        printf("Low milk: %d\n", milk);
+    if (chocolatesyrup < MIN_CHOCOLATESYRUP)
+        printf("Low chocolate syrup: %d\n", chocolatesyrup);
+}
+
+// Function to handle coffee orders
+void order_coffee()
+{
+    int choice;
+    float price;
+    float payment = 0;
+    float coins;
+
+    while (true)
+    {
+        printf("\nCOFFEE\n");
+        if (availableespresso())
+            printf("1. Espresso - %.2f AED\n", espresso_price);
+        else
+            printf("1. Espresso - currently unavailable\n");
+
+        if (availablecappuccino())
+            printf("2. Cappuccino - %.2f AED\n", cappuccino_price);
+        else
+            printf("2. Cappuccino - currently unavailable\n");
+
+        if (availablemocha())
+            printf("3. Mocha - %.2f AED\n", mocha_price);
+        else
+            printf("3. Mocha - currently unavailable\n");
+
+        printf("0. Exit\n");
+        printf("Enter your choice (1/2/3/0): ");
+        scanf("%d", &choice);
+
+        if (choice == 0) return;
+
+        switch (choice)
+        {
+        case 1:
+            if (!availableespresso())
+            {
+                printf("Espresso is unavailable. Returning to menu...\n");
+                continue;
+            }
+            price = espresso_price;
+            break;
+        case 2:
+            if (!availablecappuccino())
+            {
+                printf("Cappuccino is unavailable. Returning to menu...\n");
+                continue;
+            }
+            price = cappuccino_price;
+            break;
+        case 3:
+            if (!availablemocha())
+            {
+                printf("Mocha is unavailable. Returning to menu...\n");
+                continue;
+            }
+            price = mocha_price;
+            break;
+        default:
+            printf("Invalid choice.\n");
+            return;
+        }
+
+        printf("Price: %.2f AED\n", price);
+        printf("Confirm your order (1 for yes, 0 for no): ");
+        int confirm;
+        scanf("%d", &confirm);
+        if (!confirm) return;
+
+        while (payment < price)
+        {
+            printf("Please insert coins (0.5 or 1 AED). Remaining amount: %.2f\n", price - payment);
+            scanf("%f", &coins);
+            if (coins != 0.5 && coins != 1)
+            {
+                printf("Invalid coin. Insert 0.5 or 1 AED only.\n");
+                continue;
+            }
+            payment += coins;
+        }
+
+        // Deduct ingredients
+        usedingredients(choice);
+
+        total_amount += price;
+        printf("Payment successful.\n");
+
+        printf("You selected ");
+        switch (choice)
+        {
+        case 1: printf("Espresso\n"); break;
+        case 2: printf("Cappuccino\n"); break;
+        case 3: printf("Mocha\n"); break;
+        }
+
+        printf("Change: %.2f AED\n", payment - price);
+        checkforlowingredients();
+
+        printf("Would you like to place another order? (1 for yes, 0 for no): ");
+        int another;
+        scanf("%d", &another);
+        if (!another) return;
+    }
+}
+
+// Function to restock ingredients
+int restock_ingreditents()
+{
+    while (coffeebeans < MIN_COFFEEBEANS)
+    {
+        printf("Enter the amount of coffee beans to restock: ");
+        int restock;
+        scanf("%d", &restock);
+        coffeebeans += restock;
+        printf("Coffee beans restocked. Current: %d\n", coffeebeans);
+    }
+
+    while (water < MIN_WATER)
+    {
+        printf("Enter the amount of water to restock: ");
+        int restock;
+        scanf("%d", &restock);
+        water += restock;
+        printf("Water restocked. Current: %d\n", water);
+    }
+
+    while (milk < MIN_MILK)
+    {
+        printf("Enter the amount of milk to restock: ");
+        int restock;
+        scanf("%d", &restock);
+        milk += restock;
+        printf("Milk restocked. Current: %d\n", milk);
+    }
+
+    while (chocolatesyrup < MIN_CHOCOLATESYRUP)
+    {
+        printf("Enter the amount of chocolate syrup to restock: ");
+        int restock;
+        scanf("%d", &restock);
+        chocolatesyrup += restock;
+        printf("Chocolate syrup restocked. Current: %d\n", chocolatesyrup);
+    }
+
+    printf("All ingredients restocked.\n");
+    return 0;
+}
+
+// Function to display total sales
+void totalsales()
+{
+    printf("Total sales: %.2f AED\n", total_amount);
+    printf("Espressos sold: %d\n", espresso_sold);
+    printf("Cappuccinos sold: %d\n", cappuccino_sold);
+    printf("Mochas sold: %d\n", mocha_sold);
+    printf("Remaining ingredients:\n");
+    printf("Coffee beans: %d grams\n", coffeebeans);
+    printf("Water: %d ml\n", water);
+    printf("Milk: %d ml\n", milk);
+    printf("Chocolate syrup: %d ml\n", chocolatesyrup);
+
+    int reset;
+    printf("Do you want to reset the total sales? (1 for yes, 0 for no): ");
+    scanf("%d", &reset);
+    if (reset)
+    {
+        total_amount = 0;
+        espresso_sold = 0;
+        cappuccino_sold = 0;
+        mocha_sold = 0;
+        printf("Total sales reset.\n");
+    }
+}
+
+// Function to reset prices
+void reset_price()
+{
+    printf("Current prices:\n");
+    printf("Espresso: %.2f AED\n", espresso_price);
+    printf("Cappuccino: %.2f AED\n", cappuccino_price);
+    printf("Mocha: %.2f AED\n", mocha_price);
+
+    printf("Enter new price for Espresso: ");
+    scanf("%f", &espresso_price);
+    printf("Enter new price for Cappuccino: ");
+    scanf("%f", &cappuccino_price);
+    printf("Enter new price for Mocha: ");
+    scanf("%f", &mocha_price);
+
+    printf("Prices updated.\n");
+}
+
+// Function for admin menu
+void admin_menu()
+{
+    int choice;
+
+    do
+    {
+        printf("\nADMIN MENU\n");
+        printf("1. Restock Ingredients\n");
+        printf("2. View and Reset Total Sales\n");
+        printf("3. Reset Coffee Prices\n");
+        printf("0. Exit\n");
+
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice)
+        {
+        case 1:
+            restock_ingreditents();
+            break;
+        case 2:
+            totalsales();
+            break;
+        case 3:
+            reset_price();
+            break;
+        case 0:
+            break;
+        default:
+            printf("Invalid choice.\n");
+        }
+    } while (choice != 0);
+}
+
+// Main function
+int main()
+{
+    int isadmin;
+    int password;
+
+    printf("Welcome to the Coffee Machine.\n");
+
+    printf("Enter 0 if you are an customer or 1 if you are an admin: ");
+    scanf("%d", &isadmin);
+
+    if (isadmin == 1)
+    {
+        printf("Enter admin password: ");
+        scanf("%d", &password);
+
+        if (password == ADMIN_PASSWORD)
+        {
+            printf("Admin access granted.\n");
+            admin_menu();
+        }
+        else
+        {
+            printf("Incorrect password. Access denied.\n");
+        }
+    }
+    else
+    {
+        order_coffee();
+    }
+
+    printf("Thank you for using the Coffee Machine.\n");
+    return 0;
+}
