@@ -1,0 +1,68 @@
+#include <iostream>
+#include <iomanip>
+#include <limits>
+
+
+// Function to print real numbers with formatted output
+void print_real(float number, int fieldWidth = 10, int precision = 3) { // Default values for fieldWidth and precision
+    std::cout << std::fixed // Fixed-point notation
+              << std::setprecision(precision)  // Set precision to 3 decimal places
+              << std::setw(fieldWidth)  // Set field width to 10
+              << number << std::endl; // Output the number
+}
+
+
+// Template function to update scale of two numbers
+template <typename T>  // Template type T
+void update_scale(T& m1, T& m2, T multiplier = 10) { // Default multiplier value of 10
+    T original1 = m1; // Store original values
+    T original2 = m2; // Store original values
+    m1 = (original1 + original2) * multiplier; // Update scale
+    m2 = (original1 - original2) * multiplier; // Update scale
+}
+
+
+// Function to get valid float input from the user
+float get_float_input(const std::string& prompt) { // Pass prompt message as argument
+    float value; // Variable to store float value
+    while (true) { // Loop until valid input is received
+        std::cout << prompt; // Print prompt message
+        std::cin >> value; // Read input from user
+       
+        // Check if the input is valid
+        if (std::cin.fail()) { // Check if input failed
+            // Clear the error flag and ignore the invalid input
+            std::cin.clear();  // Clear error flag
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore invalid input
+            std::cout << "Invalid input. Please enter a valid floating-point number.\n"; // Print error message
+        } else {
+            // Valid input, break out of the loop
+            break;
+        }
+    }
+    return value;
+}
+
+
+int main() {
+    // Get valid input for a and b
+    float a = get_float_input("Enter a value for a: ");  // Get valid float input for a
+    float b = get_float_input("Enter a value for b: "); // Get valid float input for b
+   
+    // Print initial values with default formatting
+    std::cout << "\nInitial values:\n"; // Print initial values
+    print_real(a); // Print real number a
+    print_real(b); // Print real number b
+   
+    // Update scale of a and b
+    update_scale(a, b); // Update scale of a and b
+   
+    // Print modified values
+    std::cout << "\nModified values:\n"; // Print modified values
+    print_real(a); // Print real number a
+    print_real(b); // Print real number b
+   
+    // Successful program completion
+    return 0;
+}
+
