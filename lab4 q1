@@ -1,0 +1,62 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+
+int main() {
+    // Open input file for reading
+    FILE *file = fopen("C:\\Users\\nehas\\OneDrive\\Documents\\data.txt", "r");
+    if (file == NULL) {
+        perror("Error opening input file");
+        return 1;
+    }
+
+
+    // Open output file for writing
+    FILE *outputFile = fopen("C:\\Users\\nehas\\OneDrive\\Documents\\output.txt", "w");
+    if (outputFile == NULL) {
+        perror("Error opening output file");
+        fclose(file);
+        return 1;
+    }
+
+
+    // Variable to store float values
+    float value;
+    // Counter for invalid entries
+    int invalidCount = 0;
+    // Buffer to store invalid data as string (for checking invalid input)
+    char buffer[100];
+
+
+    // Read the file line by line and check for valid/invalid floats
+    while (fscanf(file, "%s", buffer) == 1) {
+        // Try to parse buffer as float to check if it's valid
+        if (sscanf(buffer, "%f", &value) == 1) {
+            // Write valid floats to output file with 3 decimal places
+            fprintf(outputFile, "%.3f\n", value);
+        } else {
+            // Print invalid entries
+            printf("Invalid entry: %s\n", buffer);
+            // Increment invalid count
+            invalidCount++;
+        }
+    }
+
+
+    // Check for any file reading errors
+    if (ferror(file)) {
+        printf("Error reading from input file.\n");
+    }
+
+
+    // Close both input and output files
+    fclose(file);
+    fclose(outputFile);
+
+
+    // Print total number of invalid entries found
+    printf("Number of invalid float values found: %d\n", invalidCount);
+
+
+    return 0;
+}
